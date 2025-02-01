@@ -101,14 +101,21 @@ async function render(device: GPUDevice, context: GPUCanvasContext, pipeline: GP
     device.queue.submit([commandEncoder.finish()])
 }
 
+// Start the WebGPU rendering loop
+async function startRenderLoop(device: GPUDevice, context: GPUCanvasContext, pipeline: GPURenderPipeline) {
+    function frame() {
+        render(device, context, pipeline)
+        requestAnimationFrame(frame)
+    }
+    requestAnimationFrame(frame)
+}
+
 // Initialize and start rendering
 async function main() {
     try {
         const { device, context, canvasFormat } = await initWebGPU()
         const pipeline = await createPipeline(device, canvasFormat)
-        
-        // Render frame
-        render(device, context, pipeline)
+        await startRenderLoop(device, context, pipeline)
     } catch (error) {
         console.error('Error:', error)
         document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
