@@ -1,6 +1,6 @@
 import './style.css'
-import vertexShader from './shaders/basic.vert.wgsl?raw'
-import fragmentShader from './shaders/basic.frag.wgsl?raw'
+import vertexShader from './shaders/basic_vert.wgsl?raw'
+import fragmentShader from './shaders/basic_frag.wgsl?raw'
 
 // Create canvas element
 const canvas = document.createElement('canvas')
