@@ -1,11 +1,10 @@
-
 struct VertexOutput {
     @builtin(position) position: vec4f,
     @location(0) color: vec4f,
 };
 
 @vertex
-fn main(
+fn vertex(
     @builtin(vertex_index) vertexIndex: u32
 ) -> VertexOutput {
     var pos = array<vec2f, 3>(
@@ -24,4 +23,11 @@ fn main(
     output.position = vec4f(pos[vertexIndex], 0.0, 1.0);
     output.color = vec4f(colors[vertexIndex], 1.0);
     return output;
+}
+
+@fragment
+fn fragment(
+    @location(0) color: vec4f
+) -> @location(0) vec4f {
+    return color;
 }

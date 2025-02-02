@@ -1,6 +1,5 @@
 import './style.css'
-import vertexShader from './shaders/basic_vert.wgsl?raw'
-import fragmentShader from './shaders/basic_frag.wgsl?raw'
+import shaderCode from './shaders/shader.wgsl?raw'
 
 // Create canvas element
 const canvas = document.createElement('canvas')
@@ -42,27 +41,22 @@ async function initWebGPU() {
 }
 
 async function createPipeline(device: GPUDevice, canvasFormat: GPUTextureFormat) {
-    // Create shader modules
-    const vertexModule = device.createShaderModule({
-        label: 'Vertex Shader',
-        code: vertexShader
-    })
-
-    const fragmentModule = device.createShaderModule({
-        label: 'Fragment Shader',
-        code: fragmentShader
+    // Create shader module
+    const shaderModule = device.createShaderModule({
+        label: 'Shader Module',
+        code: shaderCode
     })
 
     // Create render pipeline
     const pipeline = await device.createRenderPipelineAsync({
         layout: 'auto',
         vertex: {
-            module: vertexModule,
-            entryPoint: 'main'
+            module: shaderModule,
+            entryPoint: 'vertex'
         },
         fragment: {
-            module: fragmentModule,
-            entryPoint: 'main',
+            module: shaderModule,
+            entryPoint: 'fragment',
             targets: [{
                 format: canvasFormat
             }]
