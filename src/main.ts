@@ -1,123 +1,76 @@
 import './style.css'
 import shaderCode from './shaders/shader.wgsl?raw'
 
-// Create canvas element
 const canvas = document.createElement('canvas')
 canvas.width = window.innerWidth
 canvas.height = window.innerHeight
 document.querySelector<HTMLDivElement>('#app')!.appendChild(canvas)
 
 async function initWebGPU() {
-    // Check WebGPU support
-    if (!navigator.gpu) {
-        throw new Error('WebGPU not supported')
-    }
+  if (!navigator.gpu) throw new Error('WebGPU not supported')
 
-    // Get GPU adapter
-    const adapter = await navigator.gpu.requestAdapter({
-        powerPreference: 'high-performance'
-    })
-    if (!adapter) {
-        throw new Error('No GPU adapter found')
-    }
+  const adapter = await navigator.gpu.requestAdapter({ powerPreference: 'high-performance' })
+  if (!adapter) throw new Error('No GPU adapter found')
 
-    // Get GPU device
-    const device = await adapter.requestDevice()
+  const device = await adapter.requestDevice()
+  const context = canvas.getContext('webgpu')
+  if (!context) throw new Error('WebGPU context not available')
 
-    // Configure canvas context
-    const context = canvas.getContext('webgpu')
-    if (!context) {
-        throw new Error('WebGPU context not available')
-    }
+  const canvasFormat = navigator.gpu.getPreferredCanvasFormat()
+  context.configure({ device, format: canvasFormat, alphaMode: 'premultiplied' })
 
-    const canvasFormat = navigator.gpu.getPreferredCanvasFormat()
-    context.configure({
-        device: device,
-        format: canvasFormat,
-        alphaMode: 'premultiplied',
-    })
-
-    return { device, context, canvasFormat }
+  return { device, context, canvasFormat }
 }
 
 async function createPipeline(device: GPUDevice, canvasFormat: GPUTextureFormat) {
-    // Create shader module
-    const shaderModule = device.createShaderModule({
-        label: 'Shader Module',
-        code: shaderCode
-    })
-
-    // Create render pipeline
-    const pipeline = await device.createRenderPipelineAsync({
-        layout: 'auto',
-        vertex: {
-            module: shaderModule,
-            entryPoint: 'vertex'
-        },
-        fragment: {
-            module: shaderModule,
-            entryPoint: 'fragment',
-            targets: [{
-                format: canvasFormat
-            }]
-        },
-        primitive: {
-            topology: 'triangle-list'
-        }
-    })
-
-    return pipeline
+  const shaderModule = device.createShaderModule({ code: shaderCode })
+  return device.createRenderPipelineAsync({
+    layout: 'auto',
+    vertex: { module: shaderModule, entryPoint: 'vertex' },
+    fragment: {
+      module: shaderModule,
+      entryPoint: 'fragment',
+      targets: [{ format: canvasFormat }]
+    },
+    primitive: { topology: 'triangle-list' }
+  })
 }
 
 async function render(device: GPUDevice, context: GPUCanvasContext, pipeline: GPURenderPipeline) {
-    // Create command encoder
-    const commandEncoder = device.createCommandEncoder()
-    
-    // Get current texture view
-    const textureView = context.getCurrentTexture().createView()
-    
-    // Create render pass
-    const renderPass = commandEncoder.beginRenderPass({
-        colorAttachments: [{
-            view: textureView,
-            clearValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
-            loadOp: 'clear',
-            storeOp: 'store'
-        }]
-    })
+  const commandEncoder = device.createCommandEncoder()
+  const renderPass = commandEncoder.beginRenderPass({
+    colorAttachments: [{
+      view: context.getCurrentTexture().createView(),
+      clearValue: { r: 0, g: 0, b: 0, a: 1 },
+      loadOp: 'clear',
+      storeOp: 'store'
+    }]
+  })
 
-    // Set pipeline and draw
-    renderPass.setPipeline(pipeline)
-    renderPass.draw(3) // Draw triangle (3 vertices)
-    renderPass.end()
-
-    // Submit command buffer
-    device.queue.submit([commandEncoder.finish()])
+  renderPass.setPipeline(pipeline)
+  renderPass.draw(3)
+  renderPass.end()
+  device.queue.submit([commandEncoder.finish()])
 }
 
-// Start the WebGPU rendering loop
 async function startRenderLoop(device: GPUDevice, context: GPUCanvasContext, pipeline: GPURenderPipeline) {
-    function frame() {
-        render(device, context, pipeline)
-        requestAnimationFrame(frame)
-    }
+  const frame = () => {
+    render(device, context, pipeline)
     requestAnimationFrame(frame)
+  }
+  requestAnimationFrame(frame)
 }
 
-// Initialize and start rendering
 async function main() {
-    try {
-        const { device, context, canvasFormat } = await initWebGPU()
-        const pipeline = await createPipeline(device, canvasFormat)
-        await startRenderLoop(device, context, pipeline)
-    } catch (error) {
-        console.error('Error:', error)
-        document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
-            <div style="color: red">
-                ${error}
-            </div>
-        `
-    }
+  try {
+    const { device, context, canvasFormat } = await initWebGPU()
+    const pipeline = await createPipeline(device, canvasFormat)
+    await startRenderLoop(device, context, pipeline)
+  } catch (error) {
+    console.error('Error:', error)
+    document.querySelector<HTMLDivElement>('#app')!.innerHTML = `
+            <div style="color: red">${error}</div>`
+  }
 }
 
 main()

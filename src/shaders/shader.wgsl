@@ -8,9 +8,9 @@ fn vertex(
     @builtin(vertex_index) vertexIndex: u32
 ) -> VertexOutput {
     var pos = array<vec2f, 3>(
-        vec2f( 0.0,  0.5),
+        vec2f(0.0, 0.5),
         vec2f(-0.5, -0.5),
-        vec2f( 0.5, -0.5)
+        vec2f(0.5, -0.5)
     );
 
     var colors = array<vec3f, 3>(
