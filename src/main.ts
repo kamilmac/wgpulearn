@@ -2,8 +2,8 @@ import './style.css'
 import shaderCode from './shaders/shader.wgsl?raw'
 
 const canvas = document.createElement('canvas')
-canvas.width = window.innerWidth
-canvas.height = window.innerHeight
+canvas.width = 400
+canvas.height = 400
 document.querySelector<HTMLDivElement>('#app')!.appendChild(canvas)
 
 async function initWebGPU() {
@@ -48,7 +48,7 @@ async function render(device: GPUDevice, context: GPUCanvasContext, pipeline: GP
   })
 
   renderPass.setPipeline(pipeline)
-  renderPass.draw(3)
+  renderPass.draw(6) // Draw 6 vertices for 2 triangles forming a rectangle
   renderPass.end()
   device.queue.submit([commandEncoder.finish()])
 }

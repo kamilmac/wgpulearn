@@ -7,21 +7,24 @@ struct VertexOutput {
 fn vertex(
     @builtin(vertex_index) vertexIndex: u32
 ) -> VertexOutput {
-    var pos = array<vec2f, 3>(
-        vec2f(0.0, 0.5),
-        vec2f(-0.5, -0.5),
-        vec2f(0.5, -0.5)
+    // Rectangle vertices (80x40 pixels converted to clip space coordinates)
+    var pos = array<vec2f, 6>(
+        // First triangle
+        vec2f(-0.1, 0.05),  // top left
+        vec2f(-0.1, -0.05), // bottom left
+        vec2f(0.1, 0.05),   // top right
+        // Second triangle
+        vec2f(-0.1, -0.05), // bottom left
+        vec2f(0.1, -0.05),  // bottom right
+        vec2f(0.1, 0.05)    // top right
     );
 
-    var colors = array<vec3f, 3>(
-        vec3f(1.0, 0.0, 0.0),
-        vec3f(0.0, 1.0, 0.0),
-        vec3f(0.0, 0.0, 1.0)
-    );
+    // All vertices red
+    var color = vec3f(1.0, 0.0, 0.0);
 
     var output: VertexOutput;
     output.position = vec4f(pos[vertexIndex], 0.0, 1.0);
-    output.color = vec4f(colors[vertexIndex], 1.0);
+    output.color = vec4f(color, 1.0);
     return output;
 }
 
